@@ -130,7 +130,7 @@ for trial = 1:ntrials
     end
     [vbl1,vonset1] = Screen('Flip', mainwin);
     Screen('DrawTexture', mainwin, frame2);
-    % schedule beep
+    % schedule beep after the app_motion
     PsychPortAudio('Start', pahandle, 1, vonset1 + (fdelay+1) / framerate, 0);
     [vbl,vonset, t1] = Screen('Flip', mainwin);
     
@@ -186,7 +186,8 @@ for trial = 1:ntrials
 %     fprintf('Buffersize %i, xruns = %i, playpos = %6.6f secs.\n', status.BufferSize, status.XRuns, status.PositionSecs);
 %     fprintf('Screen    expects visual onset at %6.6f secs.\n', vonset);
 %     fprintf('PortAudio expects audio onset  at %6.6f secs.\n', audio_onset);
-%     fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (audio_onset - vonset)*1000.0);
+     fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (audio_onset - vonset)*1000.0);
+     fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', fdelay / framerate * 1000.0);
      Screen('Flip', mainwin);
      KbStrokeWait;
     
