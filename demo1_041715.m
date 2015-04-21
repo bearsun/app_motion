@@ -31,7 +31,7 @@ delays=[0,17,34,67,133,267,533,1067]; %cue lag time
 fdelays=round(delays*framerate/1000);
 isi=1067; % in ms
 fisi=round(isi/framerate);
-ntrials = 16;
+ntrials = 96;
 
 gray = [128 128 128];
 black = [0 0 0];
@@ -156,7 +156,7 @@ for trial = 1:ntrials
             nKeys = sum(keyCode);
             if nKeys == 1
                 if keyCode(kesc)
-                    session_end;
+                    session_end;return
                 elseif any(keyCode(possiblekn))
                     keypressed=find(keyCode);
                     rt = timeSecs - audio_onset;
