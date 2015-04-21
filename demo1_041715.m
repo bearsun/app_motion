@@ -30,6 +30,7 @@ delays=[0,17,34,67,133,267,533,1067]; %cue lag time
 fdelays=round(delays*framerate/1000);
 isi=1067; % in ms
 fisi=round(isi/framerate);
+ntrials = 16;
 
 gray = [128 128 128];
 black = [0 0 0];
@@ -52,8 +53,7 @@ freq_l = 460;
 
 InitializePsychSound(1); %with low-latency
 
-pahandle_h = PsychPortAudio('Open', [], [], 3, [],1);
-pahandle_l = PsychPortAudio('Open', [], [], 3, [],1);
+pahandle = PsychPortAudio('Open', [], [], 3, [],1);
 % Level 1 (the default) means: Try to get the lowest latency that is possible
 % under the constraint of reliable playback, freedom of choice for all parameters
 % and interoperability with other applications. Level 2 means: Take full control
@@ -65,17 +65,20 @@ pahandle_l = PsychPortAudio('Open', [], [], 3, [],1);
 beep_h = MakeBeep(freq_h,duration,freq);
 beep_l = MakeBeep(freq_l,duration,freq);
 
-PsychPortAudio('FillBuffer', pahandle_h, beep_h);
-PsychPortAudio('FillBuffer', pahandle_l, beep_l);
+bufferhandle_h = PsychPortAudio('CreateBuffer', pahandle, beep_h);
+bufferhandle_l = PsychPortAudio('CreateBuffer', pahandle, beep_l);
+
 
 %% warm up
-PsychPortAudio('Start', pahandle_h, 1, 0, 1);
-PsychPortAudio('Stop', pahandle_h, 1);
-PsychPortAudio('Start', pahandle_l, 1, 0, 1);
-PsychPortAudio('Stop', pahandle_l, 1);
+PsychPortAudio('FillBuffer', pahandle, bufferhandle_h);
+PsychPortAudio('Start', pahandle, 1, 0, 1);
+PsychPortAudio('Stop', pahandle, 1);
+PsychPortAudio('FillBuffer', pahandle, bufferhandle_l);
+PsychPortAudio('Start', pahandle, 1, 0, 1);
+PsychPortAudio('Stop', pahandle, 1);
 
 %% generate trial sequence
-[sfdelays, spahandles] = BalanceTrials(ntrials, 1, fdelays, [pahandle_h, pahandle_l]);
+[sfdelays, sbufferhandles] = BalanceTrials(ntrials, 1, fdelays, [bufferhandle_h, bufferhandle_l]);
 
 
 %% open window and buffers
@@ -101,7 +104,8 @@ KbStrokeWait;
 %% Loop for trials
 for trial = 1:ntrials
     fdelay=sfdelays(trial);
-    pahandle=spahandles(trial);
+    bufferhandle=sbufferhandles(trial);
+    PsychPortAudio('FillBuffer', pahandle, bufferhandle);
     Screen('DrawTexture', mainwin, frame1);
     Screen('Flip', mainwin, [], 1);
     for d = 1:(fisi-2)
@@ -141,9 +145,10 @@ for trial = 1:ntrials
     KbStrokeWait;
     
 end
-
+PsychPortAudio('Close');
+sca;
     function pixels=ang2pix(ang)
-        pixpercm=rect(4)/monitorh;
+        pixpercm=mrect(4)/monitorh;
         pixels=tand(ang/2)*distance*2*pixpercm;
     end
 end
