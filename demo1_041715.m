@@ -115,7 +115,7 @@ for trial = 1:ntrials
     [vbl1,vonset1] = Screen('Flip', mainwin);
     Screen('DrawTexture', mainwin, frame2);
     % schedule beep
-    PsychPortAudio('Start', pahandle, 1, vonset1 + (fdelay+1) * framerate, 0);
+    PsychPortAudio('Start', pahandle, 1, vonset1 + (fdelay+1) / framerate, 0);
     [vbl,vonset, t1] = Screen('Flip', mainwin);
     
     t2 = GetSecs;
