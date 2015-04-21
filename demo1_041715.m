@@ -31,10 +31,9 @@ fdelays=round(delays*framerate/1000);
 isi=1067; % in ms
 fisi=round(isi/framerate);
 
-gray = [128 128 128];u
+gray = [128 128 128];
 black = [0 0 0];
 bgcolor = gray;
-sticolor = black;
 decc = .49;
 dsize = .22;
 
@@ -96,7 +95,7 @@ Screen('gluDisk', frame1, black, f1center(1), f1center(2), psize);
 Screen('DrawDots', frame1, xy1, psize, black, f1center);
 
 Screen('gluDisk', frame2, black, f2center(1), f2center(2), psize);
-Screen('DrawDots', frame2, xy, psize, black, f2center);
+Screen('DrawDots', frame2, xy2, psize, black, f2center);
 
 KbStrokeWait;
 %% Loop for trials
@@ -108,12 +107,38 @@ for trial = 1:ntrials
     for d = 1:(fisi-2)
         Screen('Flip', mainwin, [], 2);
     end
-    [vbl1,vonset] = Screen('Flip', mainwin);
+    [vbl1,vonset1] = Screen('Flip', mainwin);
     Screen('DrawTexture', mainwin, frame2);
     % schedule beep
-    PsychPortAudio('Start', pahandle, 1, vonset + (fdelay+1) * framerate, 0);
-    [vbl2,vonset] = Screen('Flip', mainwin);
+    PsychPortAudio('Start', pahandle, 1, vonset1 + (fdelay+1) * framerate, 0);
+    [vbl,vonset, t1] = Screen('Flip', mainwin);
     
+    t2 = GetSecs;
+
+    % Spin-Wait until hw reports the first sample is played...
+    offset = 0;
+    while offset == 0
+        status = PsychPortAudio('GetStatus', pahandle);
+        offset = status.PositionSecs;
+        t3=GetSecs;
+        plat = status.PredictedLatency;
+        fprintf('Predicted Latency: %6.6f msecs.\n', plat*1000);
+        if offset>0
+            break;
+        end
+        WaitSecs('YieldSecs', 0.001);
+    end
+    audio_onset = status.StartTime;
+    
+    
+    fprintf('Flip delay = %6.6f secs.  Flipend vs. VBL %6.6f\n', vbl - vbl1, t1-vbl);
+    fprintf('Delay start vs. played: %6.6f secs, offset %f\n', t3 - t2, offset);
+
+    fprintf('Buffersize %i, xruns = %i, playpos = %6.6f secs.\n', status.BufferSize, status.XRuns, status.PositionSecs);
+    fprintf('Screen    expects visual onset at %6.6f secs.\n', vonset);
+    fprintf('PortAudio expects audio onset  at %6.6f secs.\n', audio_onset);
+    fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (audio_onset - vonset)*1000.0);
+    KbStrokeWait;
     
 end
 
