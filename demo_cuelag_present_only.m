@@ -1,4 +1,4 @@
-function demo1_041715(env)
+function demo_cuelag_present_only(env)
 % demo1 for apparent motion - temporal - voluntary control
 % 128 frames from 1st frame to 2nd frame (2134 ms)
 %
@@ -27,11 +27,11 @@ else
 end
 
 framerate=Screen('FrameRate',mainscreen);
-delays=[0,17,34,67]; %cue lag time
+delays=[0,17,34,67,133,267,533,1067]; %cue lag time
 fdelays=round(delays*framerate/1000);
 isi=1067; % in ms
 fisi=round(isi/framerate);
-ntrials = 96;
+ntrials = 16;
 
 gray = [128 128 128];
 black = [0 0 0];
@@ -45,8 +45,6 @@ kleft = KbName('Left'); kright = KbName('Right');
 kdown = KbName('Down');kup=KbName('Up');
 kreturn=KbName('Return');
 kback = KbName('BackSpace');
-possiblekn = [kleft, kright]; % left for counterclockwise, right for
-% clockwise
 
 % beep loading
 freq = 48000;
@@ -103,20 +101,6 @@ Screen('DrawDots', frame1, xy1, psize, black, f1center);
 Screen('gluDisk', frame2, black, f2center(1), f2center(2), psize);
 Screen('DrawDots', frame2, xy2, psize, black, f2center);
 
-%% empty loader for behavioral results
-behav = struct('keypressed', [], ...
-        'rt', []);
-    
-timing = struct('status',[],...
-    'Flip_delay',[], ...
-    'Flip_exe', [],...
-    'Audio_delay', [],...
-    'Audio_offset', [],...
-    'vonset', [],...
-    'aonset', [],...
-    'av_offset', [],...
-    'scheduled_av_offset', []);
-
 KbStrokeWait;
 %% Loop for trials
 for trial = 1:ntrials
@@ -130,7 +114,7 @@ for trial = 1:ntrials
     end
     [vbl1,vonset1] = Screen('Flip', mainwin);
     Screen('DrawTexture', mainwin, frame2);
-    % schedule beep after the app_motion
+    % schedule beep
     PsychPortAudio('Start', pahandle, 1, vonset1 + (fdelay+1) / framerate, 0);
     [vbl,vonset, t1] = Screen('Flip', mainwin);
     
@@ -142,6 +126,8 @@ for trial = 1:ntrials
         status = PsychPortAudio('GetStatus', pahandle);
         offset = status.PositionSecs;
         t3=GetSecs;
+        plat = status.PredictedLatency;
+        fprintf('Predicted Latency: %6.6f msecs.\n', plat*1000);
         if offset>0
             break;
         end
@@ -149,62 +135,22 @@ for trial = 1:ntrials
     end
     audio_onset = status.StartTime;
     
-    % collect behav data
-    while 1
-        [keyIsDown, timeSecs, keyCode] = KbCheck;
-        if keyIsDown
-            nKeys = sum(keyCode);
-            if nKeys == 1
-                if keyCode(kesc)
-                    session_end;return
-                elseif any(keyCode(possiblekn))
-                    keypressed=find(keyCode);
-                    rt = timeSecs - audio_onset;
-                    break;
-                end
-            end
-        end
-    end
     
-    % save data
-    behav(trial) = struct('keypressed', keypressed, ...
-        'rt', rt);
-    
-    timing(trial)=struct('status', status, ...
-        'Flip_delay', vbl - vbl1, ...
-        'Flip_exe', t1 - vbl, ...
-        'Audio_delay', t3 - t2, ...
-        'Audio_offset', offset, ...
-        'vonset', vonset, ...
-        'aonset', audio_onset, ...
-        'av_offset', (audio_onset - vonset) * 1000.0, ...
-        'scheduled_av_offset', fdelay / framerate * 1000.0);
-    
-%     fprintf('Flip delay = %6.6f secs.  Flipend vs. VBL %6.6f\n', vbl - vbl1, t1-vbl);
-%     fprintf('Delay start vs. played: %6.6f secs, offset %f\n', t3 - t2, offset);
-% 
-%     fprintf('Buffersize %i, xruns = %i, playpos = %6.6f secs.\n', status.BufferSize, status.XRuns, status.PositionSecs);
-%     fprintf('Screen    expects visual onset at %6.6f secs.\n', vonset);
-%     fprintf('PortAudio expects audio onset  at %6.6f secs.\n', audio_onset);
-     fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (audio_onset - vonset)*1000.0);
-     fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', fdelay / framerate * 1000.0);
-     Screen('Flip', mainwin);
-     KbStrokeWait;
+    fprintf('Flip delay = %6.6f secs.  Flipend vs. VBL %6.6f\n', vbl - vbl1, t1-vbl);
+    fprintf('Delay start vs. played: %6.6f secs, offset %f\n', t3 - t2, offset);
+
+    fprintf('Buffersize %i, xruns = %i, playpos = %6.6f secs.\n', status.BufferSize, status.XRuns, status.PositionSecs);
+    fprintf('Screen    expects visual onset at %6.6f secs.\n', vonset);
+    fprintf('PortAudio expects audio onset  at %6.6f secs.\n', audio_onset);
+    fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (audio_onset - vonset)*1000.0);
+    fprintf('Scheduled audio-visual delay is %6.6f msecs. \n', fdelay / framerate *1000.0);
+    KbStrokeWait;
     
 end
 PsychPortAudio('Close');
 sca;
-save('res.mat','behav','timing');
     function pixels=ang2pix(ang)
         pixpercm=mrect(4)/monitorh;
         pixels=tand(ang/2)*distance*2*pixpercm;
-    end
-
-    function session_end
-        PsychPortAudio('Close');
-        ShowCursor;
-        sca;
-        save('res.mat','behav','timing');
-        return
     end
 end
