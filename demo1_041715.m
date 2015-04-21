@@ -17,14 +17,15 @@ global mrect
 if strcmp(env, 'lab')
     monitorh=30; %12;% in cm
     distance=55; %25;% in cm
+    mainscreen=1;
 elseif strcmp(env, 'lap')
     monitorh=19;
     distance=45;
+    mainscreen=0;
 else
     error('pls input env');
 end
 
-mainscreen=0;
 framerate=Screen('FrameRate',mainscreen);
 delays=[0,17,34,67,133,267,533,1067]; %cue lag time
 fdelays=round(delays*framerate/1000);
@@ -53,7 +54,7 @@ freq_l = 460;
 
 InitializePsychSound(1); %with low-latency
 
-pahandle = PsychPortAudio('Open', [], [], 3, [],1);
+pahandle = PsychPortAudio('Open', [], [], [], freq,1);
 % Level 1 (the default) means: Try to get the lowest latency that is possible
 % under the constraint of reliable playback, freedom of choice for all parameters
 % and interoperability with other applications. Level 2 means: Take full control
@@ -91,8 +92,8 @@ pecc = ang2pix(decc);
 psize = ang2pix(dsize);
 xy1 = [0,0;-pecc,pecc];
 xy2 = xy1([2,1],:);
-f1center=[f1rect(2)/2, f1rect(4)/2];
-f2center=[f2rect(2)/2, f2rect(4)/2];
+f1center=[f1rect(3)/2, f1rect(4)/2];
+f2center=[f2rect(3)/2, f2rect(4)/2];
 %% construct frame1 and frame2
 Screen('gluDisk', frame1, black, f1center(1), f1center(2), psize);
 Screen('DrawDots', frame1, xy1, psize, black, f1center);
