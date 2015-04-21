@@ -29,7 +29,7 @@ end
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [67, 133, 267, 533, 1067];
+leads = [-133, 0, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
 isi=2134; % in ms
 fisi=round(isi/framerate);
