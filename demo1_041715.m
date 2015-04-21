@@ -27,7 +27,7 @@ else
 end
 
 framerate=Screen('FrameRate',mainscreen);
-delays=[0,17,34,67,133,267,533,1067]; %cue lag time
+delays=[0,17,34,67]; %cue lag time
 fdelays=round(delays*framerate/1000);
 isi=1067; % in ms
 fisi=round(isi/framerate);
