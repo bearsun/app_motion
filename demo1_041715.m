@@ -142,8 +142,6 @@ for trial = 1:ntrials
         status = PsychPortAudio('GetStatus', pahandle);
         offset = status.PositionSecs;
         t3=GetSecs;
-        plat = status.PredictedLatency;
-        fprintf('Predicted Latency: %6.6f msecs.\n', plat*1000);
         if offset>0
             break;
         end
@@ -158,7 +156,7 @@ for trial = 1:ntrials
             nKeys = sum(keyCode);
             if nKeys == 1
                 if keyCode(kesc)
-                    session_end;return
+                    session_end;
                 elseif any(keyCode(possiblekn))
                     keypressed=find(keyCode);
                     rt = timeSecs - audio_onset;
@@ -195,8 +193,17 @@ for trial = 1:ntrials
 end
 PsychPortAudio('Close');
 sca;
+save('res.mat','behav','timing');
     function pixels=ang2pix(ang)
         pixpercm=mrect(4)/monitorh;
         pixels=tand(ang/2)*distance*2*pixpercm;
+    end
+
+    function session_end
+        PsychPortAudio('Close');
+        ShowCursor;
+        sca;
+        save('res.mat','behav','timing');
+        return
     end
 end
