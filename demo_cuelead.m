@@ -10,6 +10,7 @@ function demo_cuelead(env)
 
 %% some parameters
 AssertOpenGL;
+Priority(1);
 
 if strcmp(env, 'lab')
     monitorh=30; %12;% in cm
@@ -22,7 +23,7 @@ elseif strcmp(env, 'lap')
 else
     error('pls input env');
 end
-
+sid = [];
 sid = input('identifier for this session?');
 
 framerate=Screen('FrameRate',mainscreen);
@@ -38,8 +39,9 @@ nblocks = 4; % with two passive viewing blocks pre and post
 gray = [128 128 128];
 black = [0 0 0];
 bgcolor = gray;
-decc = .49;
-dsize = .22;
+decc = 8.71;
+dfixsize = .22;
+dsize = 4.36;
 
 % Keyboard setting
 kspace = KbName('space'); kesc = KbName('Escape');
@@ -97,15 +99,16 @@ PsychPortAudio('Stop', pahandle, 1);
 %% visual angle to pixels
 pecc = ang2pix(decc);
 psize = ang2pix(dsize);
+pfixsize = ang2pix(dfixsize);
 xy1 = [0,0;-pecc,pecc];
 xy2 = xy1([2,1],:);
 f1center=[f1rect(3)/2, f1rect(4)/2];
 f2center=[f2rect(3)/2, f2rect(4)/2];
 %% construct frame1 and frame2
-Screen('gluDisk', frame1, black, f1center(1), f1center(2), psize);
+Screen('gluDisk', frame1, black, f1center(1), f1center(2), pfixsize);
 Screen('DrawDots', frame1, xy1, psize, black, f1center);
 
-Screen('gluDisk', frame2, black, f2center(1), f2center(2), psize);
+Screen('gluDisk', frame2, black, f2center(1), f2center(2), pfixsize);
 Screen('DrawDots', frame2, xy2, psize, black, f2center);
 
 %% empty loader for behavioral results
@@ -131,13 +134,15 @@ KbStrokeWait;
 for block = 1:(nblocks+2)
     for subtrial = 1:ntrialsperblock
         if block == 1
-            flead = sfleads_pre(subtrial);
-            bufferhandle = sbufferhandles_pre(subtrial);
+            trial = subtrial;
+            flead = sfleads_pre(trial);
+            bufferhandle = sbufferhandles_pre(trial);
         elseif block == 6
-            flead = sfleads_post(subtrial);
-            bufferhandle = sbufferhandles_post(subtrial);
+            trial = subtrial;
+            flead = sfleads_post(trial);
+            bufferhandle = sbufferhandles_post(trial);
         else
-            trial = subtrial + (block - 1) * ntrialsperblock;
+            trial = subtrial + (block - 2) * ntrialsperblock;
             flead=sfleads(trial);
             bufferhandle=sbufferhandles(trial);
         end
@@ -178,7 +183,7 @@ for block = 1:(nblocks+2)
         
         if bufferhandle == bufferhandle_l
             tone = 'low';
-        elseif bufferhandle == bufferhandl_h
+        elseif bufferhandle == bufferhandle_h
             tone = 'high';
         else
             error('bufferhandle not matching any handle');
@@ -252,7 +257,7 @@ session_end;
         PsychPortAudio('Close');
         ShowCursor;
         sca;
-        save(['res_' sid '.mat'],'behav','timing','behav_pre','timing_pre','behav_post','timing_post');
+        save(['res_' num2str(sid) '.mat'],'behav','timing','behav_pre','timing_pre','behav_post','timing_post');
         return
     end
 end
