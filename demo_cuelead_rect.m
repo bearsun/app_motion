@@ -1,9 +1,12 @@
-function demo_cuelead(env)
+function demo_cuelead_rect(env)
 % demo1 for apparent motion - temporal - voluntary control
 % 128 frames from 1st frame to 2nd frame (2134 ms)
-% high tone for clockwise
-% low tone for counter clockwise
-% small ecc: .49 vd   small sti: .22 vd
+% large ecc 8.71 vd   large sti 4.36 vd
+% instead of rotation, this version we put two sti on upperleft/lowerright
+% for the 1st frame and lowerleft/upperright for the 2nd frame
+% task is to report horizontal/vertical motion
+% high tone for horizontal
+% low tone for vertical
 %
 % Mossbridge, J. A., Ortega, L., Grabowecky, M., & Suzuki, S. (2013). Rapid
 % volitional control of apparent motion during percept generation. 
@@ -101,8 +104,8 @@ PsychPortAudio('Stop', pahandle, 1);
 pecc = ang2pix(decc);
 psize = ang2pix(dsize);
 pfixsize = ang2pix(dfixsize);
-xy1 = [0,0;-pecc,pecc];
-xy2 = xy1([2,1],:);
+xy1 = [-pecc/sqrt(2),pecc/sqrt(2);-pecc/sqrt(2),pecc/sqrt(2)];
+xy2 = [-xy1(1,:); xy1(2,:)];
 f1center=[f1rect(3)/2, f1rect(4)/2];
 f2center=[f2rect(3)/2, f2rect(4)/2];
 %% construct frame1 and frame2
