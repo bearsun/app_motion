@@ -1,7 +1,8 @@
 function demo_cuelead(env)
 % demo1 for apparent motion - temporal - voluntary control
 % 128 frames from 1st frame to 2nd frame (2134 ms)
-%
+% high tone for clockwise
+% low tone for counter clockwise
 %
 % Mossbridge, J. A., Ortega, L., Grabowecky, M., & Suzuki, S. (2013). Rapid
 % volitional control of apparent motion during percept generation. 
@@ -9,10 +10,6 @@ function demo_cuelead(env)
 
 %% some parameters
 AssertOpenGL;
-
-global monitorh
-global distance
-global mrect
 
 if strcmp(env, 'lab')
     monitorh=30; %12;% in cm
@@ -26,15 +23,17 @@ else
     error('pls input env');
 end
 
+sid = input('identifier for this session?');
+
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-267, -133, 0, 133, 267, 533];
+leads = [-533, -267, -133, -67, 0, 67, 133, 533];
 fleads = round(leads*framerate/1000);
 isi=2134; % in ms
 fisi=round(isi/framerate);
-ntrialsperblock = 96;
-nblocks = 4;
+ntrialsperblock = 128;
+nblocks = 4; % with two passive viewing blocks pre and post
 
 gray = [128 128 128];
 black = [0 0 0];
@@ -86,6 +85,9 @@ PsychPortAudio('Stop', pahandle, 1);
 %% generate trial sequence
 [sfleads, sbufferhandles] = BalanceTrials(ntrialsperblock*nblocks, 1, fleads, [bufferhandle_h, bufferhandle_l]);
 
+%% generate passive viewing blocks
+[sfleads_pre, sbufferhandles_pre] = BalanceTrials(ntrialsperblock, 1, fleads, [bufferhandle_h, bufferhandle_l]);
+[sfleads_post, sbufferhandles_post] = BalanceTrials(ntrialsperblock, 1, fleads, [bufferhandle_h, bufferhandle_l]);
 
 %% open window and buffers
 [mainwin,mrect]=Screen('OpenWindow', mainscreen, bgcolor);
@@ -108,7 +110,11 @@ Screen('DrawDots', frame2, xy2, psize, black, f2center);
 
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
+        'flead', [], ...
+        'tone', [], ...
         'rt', []);
+behav_pre = behav;
+behav_post = behav;
     
 timing = struct('status',[],...
     'Flip_delay',[], ...
@@ -117,14 +123,24 @@ timing = struct('status',[],...
     'aonset', [],...
     'av_offset', [],...
     'scheduled_av_offset', []);
+timing_pre = timing;
+timing_post = timing;
 
 KbStrokeWait;
 %% Loop for trials
-for block = 1:nblocks
+for block = 1:(nblocks+2)
     for subtrial = 1:ntrialsperblock
-        trial = subtrial + (block - 1) * ntrialsperblock;
-        flead=sfleads(trial);
-        bufferhandle=sbufferhandles(trial);
+        if block == 1
+            flead = sfleads_pre(subtrial);
+            bufferhandle = sbufferhandles_pre(subtrial);
+        elseif block == 6
+            flead = sfleads_post(subtrial);
+            bufferhandle = sbufferhandles_post(subtrial);
+        else
+            trial = subtrial + (block - 1) * ntrialsperblock;
+            flead=sfleads(trial);
+            bufferhandle=sbufferhandles(trial);
+        end
         PsychPortAudio('FillBuffer', pahandle, bufferhandle);
         [~,vonset1] = Screen('Flip', mainwin);
         Screen('DrawTexture', mainwin, frame1);
@@ -160,18 +176,51 @@ for block = 1:nblocks
             end
         end
         
+        if bufferhandle == bufferhandle_l
+            tone = 'low';
+        elseif bufferhandle == bufferhandl_h
+            tone = 'high';
+        else
+            error('bufferhandle not matching any handle');
+        end
+        
         % save data
-        behav(trial) = struct('keypressed', keypressed, ...
-            'rt', rt);
-        
-        timing(trial)=struct('status', status, ...
-            'Flip_delay', vbl - vbl1, ...
-            'Flip_exe', t1 - vbl, ...
-            'vonset', vonset, ...
-            'aonset', audio_onset, ...
-            'av_offset', abs(audio_onset - vonset) * 1000.0, ...
-            'scheduled_av_offset', flead / framerate * 1000.0);
-        
+        if block == 1
+            behav_pre(trial) = struct('keypressed', keypressed, ...
+                'flead', flead, ...
+                'tone', tone, ...
+                'rt', rt);
+            
+            timing_pre(trial)=struct('status', status, ...
+                'Flip_delay', vbl - vbl1, ...
+                'Flip_exe', t1 - vbl, ...
+                'vonset', vonset, ...
+                'aonset', audio_onset, ...
+                'av_offset', abs(audio_onset - vonset) * 1000.0, ...
+                'scheduled_av_offset', flead / framerate * 1000.0);
+        elseif block == 6
+            behav_post(trial) = struct('keypressed', keypressed, ...
+                'rt', rt);
+            
+            timing_post(trial)=struct('status', status, ...
+                'Flip_delay', vbl - vbl1, ...
+                'Flip_exe', t1 - vbl, ...
+                'vonset', vonset, ...
+                'aonset', audio_onset, ...
+                'av_offset', abs(audio_onset - vonset) * 1000.0, ...
+                'scheduled_av_offset', flead / framerate * 1000.0);
+        else
+            behav(trial) = struct('keypressed', keypressed, ...
+                'rt', rt);
+            
+            timing(trial)=struct('status', status, ...
+                'Flip_delay', vbl - vbl1, ...
+                'Flip_exe', t1 - vbl, ...
+                'vonset', vonset, ...
+                'aonset', audio_onset, ...
+                'av_offset', abs(audio_onset - vonset) * 1000.0, ...
+                'scheduled_av_offset', flead / framerate * 1000.0);
+        end
         %     fprintf('Flip delay = %6.6f secs.  Flipend vs. VBL %6.6f\n', vbl - vbl1, t1-vbl);
         %     fprintf('Delay start vs. played: %6.6f secs, offset %f\n', t3 - t2, offset);
         %
@@ -183,7 +232,11 @@ for block = 1:nblocks
         Screen('Flip', mainwin);
         KbStrokeWait;
     end
-    DrawFormattedText(mainwin,['end of block ' num2str(block) '. Press to start the next.'], 'center','center', white);
+    if block == 5
+        DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', white);
+    else
+        DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for clockwise, low tone for counter-clockwise. Press to start the next.'], 'center','center', white);
+    end
     Screen('Flip', mainwin);
     KbStrokeWait;
 end
@@ -199,7 +252,7 @@ session_end;
         PsychPortAudio('Close');
         ShowCursor;
         sca;
-        save('res.mat','behav','timing');
+        save(['res_' sid '.mat'],'behav','timing','behav_pre','timing_pre','behav_post','timing_post');
         return
     end
 end
