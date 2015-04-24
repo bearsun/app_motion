@@ -24,13 +24,14 @@ elseif strcmp(env, 'lap')
 else
     error('pls input env');
 end
-sid = [];
-sid = input('identifier for this session?');
+
+sid = input('identifier for this session?','s');
 
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-533, -267, -133, -67, 0, 67, 133, 533];
+% leads = [-533, -267, -133, -67, 0, 67, 133, 533];
+leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
 isi=2134; % in ms
 fisi=round(isi/framerate);
@@ -206,6 +207,8 @@ for block = 1:(nblocks+2)
                 'scheduled_av_offset', flead / framerate * 1000.0);
         elseif block == 6
             behav_post(trial) = struct('keypressed', keypressed, ...
+                'flead', flead, ...
+                'tone', tone, ...
                 'rt', rt);
             
             timing_post(trial)=struct('status', status, ...
@@ -217,6 +220,8 @@ for block = 1:(nblocks+2)
                 'scheduled_av_offset', flead / framerate * 1000.0);
         else
             behav(trial) = struct('keypressed', keypressed, ...
+                'flead', flead, ...
+                'tone', tone, ...
                 'rt', rt);
             
             timing(trial)=struct('status', status, ...
@@ -239,9 +244,9 @@ for block = 1:(nblocks+2)
         KbStrokeWait;
     end
     if block == 5
-        DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', white);
+        DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', black);
     else
-        DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for clockwise, low tone for counter-clockwise. Press to start the next.'], 'center','center', white);
+        DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for clockwise, low tone for counter-clockwise. Press to start the next.'], 'center','center', black);
     end
     Screen('Flip', mainwin);
     KbStrokeWait;
@@ -258,7 +263,7 @@ session_end;
         PsychPortAudio('Close');
         ShowCursor;
         sca;
-        save(['res_' num2str(sid) '.mat'],'behav','timing','behav_pre','timing_pre','behav_post','timing_post');
+        save(['res_' sid '.mat'],'behav','timing','behav_pre','timing_pre','behav_post','timing_post');
         return
     end
 end
