@@ -25,8 +25,8 @@ elseif strcmp(env, 'lap')
 else
     error('pls input env');
 end
-sid = [];
-sid = input('identifier for this session?');
+
+sid = input('identifier for this session?', 's');
 
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
@@ -37,10 +37,11 @@ isi=2134; % in ms
 fisi=round(isi/framerate);
 ntrialsperblock = 128;
 nblocks = 4; % with two passive viewing blocks pre and post
-cuelast = 50; % in ms
-fcuelast = cuelast * framerate / 1000;
+cuelast = 17; % in ms
+fcuelast = round(cuelast * framerate / 1000);
 
 gray = [128 128 128];
+cuecolor = [100 100 100];
 black = [0 0 0];
 bgcolor = gray;
 decc = 8.71;
@@ -58,7 +59,7 @@ possiblekn = [kleft, kright]; % left for counterclockwise, right for
 % clockwise
 
 %% generate trial sequence
-[sfleads, scue] = BalanceTrials(ntrialsperblock*nblocks, 1, fleads, ['cue_cw', 'cue_ccw']);
+[sfleads, scue] = BalanceTrials(ntrialsperblock*nblocks, 1, fleads, {'cue_cw', 'cue_ccw'});
 
 %% open window and buffers
 [mainwin,mrect]=Screen('OpenWindow', mainscreen, bgcolor);
@@ -77,7 +78,7 @@ pfixsize = ang2pix(dfixsize);
 xy1 = [0,0;-pecc,pecc];
 xy2 = xy1([2,1],:);
 cue_cw = [pecc/sqrt(2), -pecc/sqrt(2); -pecc/sqrt(2), pecc/sqrt(2)];
-cue_ccw = [pecc/sqrt(2), pecc/sqrt(2); -pecc/sqrt(2), -pecc/sqrt(2)];
+cue_ccw = [pecc/sqrt(2),-pecc/sqrt(2); pecc/sqrt(2), -pecc/sqrt(2)];
 f1center=[f1rect(3)/2, f1rect(4)/2];
 f2center=[f2rect(3)/2, f2rect(4)/2];
 %% construct frame1 and frame2
@@ -90,23 +91,24 @@ Screen('DrawDots', frame2, xy2, psize, black, f2center);
 %% frame1, frame2 with different cue
 Screen('gluDisk', frame1cw, black, f1center(1), f1center(2), pfixsize);
 Screen('DrawDots', frame1cw, xy1, psize, black, f1center);
-Screen('DrawDots', frame1cw, cue_cw, pcuesize, black, f1center);
+Screen('DrawDots', frame1cw, cue_cw, pcuesize, cuecolor, f1center);
 
 Screen('gluDisk', frame2cw, black, f2center(1), f2center(2), pfixsize);
 Screen('DrawDots', frame2cw, xy2, psize, black, f2center);
-Screen('DrawDots', frame2cw, cue_cw, pcuesize, black, f2center);
+Screen('DrawDots', frame2cw, cue_cw, pcuesize, cuecolor, f2center);
 
 Screen('gluDisk', frame1ccw, black, f1center(1), f1center(2), pfixsize);
 Screen('DrawDots', frame1ccw, xy1, psize, black, f1center);
-Screen('DrawDots', frame1ccw, cue_ccw, pcuesize, black, f1center);
+Screen('DrawDots', frame1ccw, cue_ccw, pcuesize, cuecolor, f1center);
 
 Screen('gluDisk', frame2ccw, black, f2center(1), f2center(2), pfixsize);
 Screen('DrawDots', frame2ccw, xy2, psize, black, f2center);
-Screen('DrawDots', frame2ccw, cue_ccw, pcuesize, black, f2center);
+Screen('DrawDots', frame2ccw, cue_ccw, pcuesize, cuecolor, f2center);
 
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
     'flead', [], ...
+    'actual_flead', [], ...
     'cue', [], ...
     'rt', []);
 
@@ -118,7 +120,7 @@ behav_post = struct('keypressed', [], ...
 
 KbStrokeWait;
 %% Loop for trials
-for block = 1:(nblocks+2)
+for block = 2:(nblocks+2)
     for subtrial = 1:ntrialsperblock
         if block ~= 1 && block ~= nblocks+2
             trial = subtrial + (block - 2) * ntrialsperblock;
@@ -200,7 +202,7 @@ session_end;
         PsychPortAudio('Close');
         ShowCursor;
         sca;
-        save(['res_' num2str(sid) '.mat'],'behav','behav_pre','behav_post');
+        save(['res_' sid '.mat'],'behav','behav_pre','behav_post');
         return
     end
 
@@ -259,7 +261,7 @@ end
 
 function onset = present(mainwin, frame, t)
 
-if t > 0
+if t > 1
     Screen('DrawTexture', mainwin, frame);
     for flip = 1:(t-1)
         if flip == 1
@@ -269,6 +271,11 @@ if t > 0
         end
     end
     Screen('Flip',mainwin);
+elseif t == 1
+    Screen('DrawTexture', mainwin, frame);
+    [~, onset] = Screen('Flip',mainwin);
+elseif t < 1
+    onset = NaN;
 end
 
 end
