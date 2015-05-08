@@ -1,14 +1,16 @@
-function demo_cuelead2(env)
-% demo1 for apparent motion - temporal - voluntary control
+function demo_rect_endog(env)
+% demo for apparent motion - temporal - voluntary control
 % 128 frames from 1st frame to 2nd frame (2134 ms)
-% high tone for clockwise
-% low tone for counter clockwise
-% large ecc: 8.71 vd    large sti: 4.36 vd
+% large ecc 8.71 vd   large sti 4.36 vd
+% instead of rotation, this version we put two sti on upperleft/lowerright
+% for the 1st frame and lowerleft/upperright for the 2nd frame
+% task is to report horizontal/vertical motion
+% high tone for horizontal
+% low tone for vertical
 %
 % Mossbridge, J. A., Ortega, L., Grabowecky, M., & Suzuki, S. (2013). Rapid
 % volitional control of apparent motion during percept generation. 
 % Attention, Perception, & Psychophysics, 75(7), 1486-1495.
-
 %% some parameters
 AssertOpenGL;
 Priority(1);
@@ -30,8 +32,8 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-% leads = [-533, -267, -133, -67, 0, 67, 133, 533];
-leads = [0, 17, 34, 67, 133, 267, 533, 1067];
+leads = [-533, -267, -133, -67, 0, 67, 133, 533];
+% leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
 isi=2134; % in ms
 fisi=round(isi/framerate);
@@ -102,8 +104,8 @@ PsychPortAudio('Stop', pahandle, 1);
 pecc = ang2pix(decc);
 psize = ang2pix(dsize);
 pfixsize = ang2pix(dfixsize);
-xy1 = [0,0;-pecc,pecc];
-xy2 = xy1([2,1],:);
+xy1 = [-pecc/sqrt(2),pecc/sqrt(2);-pecc/sqrt(2),pecc/sqrt(2)];
+xy2 = [-xy1(1,:); xy1(2,:)];
 f1center=[f1rect(3)/2, f1rect(4)/2];
 f2center=[f2rect(3)/2, f2rect(4)/2];
 %% construct frame1 and frame2

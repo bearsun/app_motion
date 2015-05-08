@@ -1,4 +1,4 @@
-function demo_cuelead2_excue(env)
+function demo_rect_excue(env)
 % demo1 for apparent motion - temporal - voluntary control
 % 128 frames from 1st frame to 2nd frame (2134 ms)
 % instead of tone cue, use subliminal cue on the midpoint of ap trail
@@ -73,14 +73,17 @@ possiblekn = [kleft, kright]; % left for counterclockwise, right for
 %% visual angle to pixels
 pecc = ang2pix(decc);
 psize = ang2pix(dsize);
-pcuesize = ang2pix(dcuesize);
 pfixsize = ang2pix(dfixsize);
-xy1 = [0,0;-pecc,pecc];
-xy2 = xy1([2,1],:);
-cue_cw = [pecc/sqrt(2), -pecc/sqrt(2); -pecc/sqrt(2), pecc/sqrt(2)];
-cue_ccw = [pecc/sqrt(2),-pecc/sqrt(2); pecc/sqrt(2), -pecc/sqrt(2)];
+xy1 = [-pecc/sqrt(2),pecc/sqrt(2);-pecc/sqrt(2),pecc/sqrt(2)];
+xy2 = [-xy1(1,:); xy1(2,:)];
 f1center=[f1rect(3)/2, f1rect(4)/2];
 f2center=[f2rect(3)/2, f2rect(4)/2];
+%% construct frame1 and frame2
+Screen('gluDisk', frame1, black, f1center(1), f1center(2), pfixsize);
+Screen('DrawDots', frame1, xy1, psize, black, f1center);
+
+Screen('gluDisk', frame2, black, f2center(1), f2center(2), pfixsize);
+Screen('DrawDots', frame2, xy2, psize, black, f2center);
 %% construct frame1 and frame2
 Screen('gluDisk', frame1, black, f1center(1), f1center(2), pfixsize);
 Screen('DrawDots', frame1, xy1, psize, black, f1center);
@@ -279,5 +282,3 @@ elseif t < 1
 end
 
 end
-
-
