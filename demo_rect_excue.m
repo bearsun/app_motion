@@ -65,48 +65,49 @@ possiblekn = [kleft, kright]; % left for counterclockwise, right for
 [mainwin,mrect]=Screen('OpenWindow', mainscreen, bgcolor);
 [frame1,f1rect]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
 [frame2,f2rect]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
-[frame1cw,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
-[frame2cw,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
-[frame1ccw,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
-[frame2ccw,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
+[frame1hori,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
+[frame2hori,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
+[frame1vert,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
+[frame2vert,~]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
 
 %% visual angle to pixels
 pecc = ang2pix(decc);
 psize = ang2pix(dsize);
 pfixsize = ang2pix(dfixsize);
+pcuesize = ang2pix(dcuesize);
 xy1 = [-pecc/sqrt(2),pecc/sqrt(2);-pecc/sqrt(2),pecc/sqrt(2)];
 xy2 = [-xy1(1,:); xy1(2,:)];
 f1center=[f1rect(3)/2, f1rect(4)/2];
 f2center=[f2rect(3)/2, f2rect(4)/2];
+
 %% construct frame1 and frame2
 Screen('gluDisk', frame1, black, f1center(1), f1center(2), pfixsize);
 Screen('DrawDots', frame1, xy1, psize, black, f1center);
 
 Screen('gluDisk', frame2, black, f2center(1), f2center(2), pfixsize);
 Screen('DrawDots', frame2, xy2, psize, black, f2center);
-%% construct frame1 and frame2
-Screen('gluDisk', frame1, black, f1center(1), f1center(2), pfixsize);
-Screen('DrawDots', frame1, xy1, psize, black, f1center);
 
-Screen('gluDisk', frame2, black, f2center(1), f2center(2), pfixsize);
-Screen('DrawDots', frame2, xy2, psize, black, f2center);
+%% cue
+cue_hori = [0, 0; xy1(2,:)];
+cue_vert = [xy1(1,:);0, 0];
+
 
 %% frame1, frame2 with different cue
-Screen('gluDisk', frame1cw, black, f1center(1), f1center(2), pfixsize);
-Screen('DrawDots', frame1cw, xy1, psize, black, f1center);
-Screen('DrawDots', frame1cw, cue_cw, pcuesize, cuecolor, f1center);
+Screen('gluDisk', frame1hori, black, f1center(1), f1center(2), pfixsize);
+Screen('DrawDots', frame1hori, xy1, psize, black, f1center);
+Screen('DrawDots', frame1hori, cue_hori, pcuesize, cuecolor, f1center);
 
-Screen('gluDisk', frame2cw, black, f2center(1), f2center(2), pfixsize);
-Screen('DrawDots', frame2cw, xy2, psize, black, f2center);
-Screen('DrawDots', frame2cw, cue_cw, pcuesize, cuecolor, f2center);
+Screen('gluDisk', frame2hori, black, f2center(1), f2center(2), pfixsize);
+Screen('DrawDots', frame2hori, xy2, psize, black, f2center);
+Screen('DrawDots', frame2hori, cue_hori, pcuesize, cuecolor, f2center);
 
-Screen('gluDisk', frame1ccw, black, f1center(1), f1center(2), pfixsize);
-Screen('DrawDots', frame1ccw, xy1, psize, black, f1center);
-Screen('DrawDots', frame1ccw, cue_ccw, pcuesize, cuecolor, f1center);
+Screen('gluDisk', frame1vert, black, f1center(1), f1center(2), pfixsize);
+Screen('DrawDots', frame1vert, xy1, psize, black, f1center);
+Screen('DrawDots', frame1vert, cue_vert, pcuesize, cuecolor, f1center);
 
-Screen('gluDisk', frame2ccw, black, f2center(1), f2center(2), pfixsize);
-Screen('DrawDots', frame2ccw, xy2, psize, black, f2center);
-Screen('DrawDots', frame2ccw, cue_ccw, pcuesize, cuecolor, f2center);
+Screen('gluDisk', frame2vert, black, f2center(1), f2center(2), pfixsize);
+Screen('DrawDots', frame2vert, xy2, psize, black, f2center);
+Screen('DrawDots', frame2vert, cue_vert, pcuesize, cuecolor, f2center);
 
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
@@ -129,11 +130,11 @@ for block = 2:(nblocks+2)
             trial = subtrial + (block - 2) * ntrialsperblock;
             flead = sfleads(trial);
             if strcmp(scue(trial), 'cue_cw')
-                frame1cue = frame1cw;
-                frame2cue = frame2cw;
+                frame1cue = frame1hori;
+                frame2cue = frame2hori;
             elseif strcmp(scue(trial), 'cue_ccw')
-                frame1cue = frame1ccw;
-                frame2cue = frame2ccw;
+                frame1cue = frame1vert;
+                frame2cue = frame2vert;
             else
                 error('wrong cue seq');
             end
