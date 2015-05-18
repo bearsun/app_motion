@@ -2,9 +2,9 @@ function demo_cuelead2_excue(env)
 % demo1 for apparent motion - temporal - voluntary control
 % 128 frames from 1st frame to 2nd frame (2134 ms)
 % instead of tone cue, use subliminal cue on the midpoint of ap trail
-% cue length: 50 ms
-% cue size: 2.18 vd (half of the sti, 1/4 in area)
-% large ecc: 8.71 vd    large sti: 4.36 vd
+% cue length: 17 ms
+% cue size: 0.11 vd (half of the sti, 1/4 in area)
+% ecc: 4.44 vd    sti: 2.22 vd
 %
 % Mossbridge, J. A., Ortega, L., Grabowecky, M., & Suzuki, S. (2013). Rapid
 % volitional control of apparent motion during percept generation.
@@ -44,9 +44,9 @@ gray = [128 128 128];
 cuecolor = [100 100 100];
 black = [0 0 0];
 bgcolor = gray;
-decc = 8.71;
+decc = 4.44;
 dfixsize = .22;
-dsize = 4.36;
+dsize = 2.22;
 dcuesize = dsize/2;
 
 % Keyboard setting
@@ -179,11 +179,9 @@ for block = 2:(nblocks+2)
         Screen('Flip', mainwin);
         KbStrokeWait;
     end
-    if block == 5
-        DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', white);
-    else
-        DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for clockwise, low tone for counter-clockwise. Press to start the next.'], 'center','center', white);
-    end
+    
+    DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', black);
+ 
     Screen('Flip', mainwin);
     KbStrokeWait;
 end

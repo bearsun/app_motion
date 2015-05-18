@@ -30,11 +30,12 @@ sid = input('identifier for this session?');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-533, -267, -133, -67, 0, 67, 133, 533];
+leads = [-533, -267, -133, 0, 133, 267, 533, NaN];
 fleads = round(leads*framerate/1000);
 isi=2134; % in ms
 fisi=round(isi/framerate);
-ntrialsperblock = 128;
+trialspercond = 16;
+ntrialsperblock = numel(leads) * trialspercond;
 nblocks = 4; % with two passive viewing blocks pre and post
 
 gray = [128 128 128];
