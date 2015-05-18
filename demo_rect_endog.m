@@ -1,16 +1,16 @@
 function demo_rect_endog(env)
 % demo for apparent motion - temporal - voluntary control
+% horizontal vs. vertical apparent motion with endogenous auditory cue
 % 128 frames from 1st frame to 2nd frame (2134 ms)
-% large ecc 8.71 vd   large sti 4.36 vd
-% instead of rotation, this version we put two sti on upperleft/lowerright
-% for the 1st frame and lowerleft/upperright for the 2nd frame
-% task is to report horizontal/vertical motion
-% high tone for horizontal
-% low tone for vertical
+% high tone for vertical
+% low tone for horizontal
+% response: left for vertical, right for horizontal
+% small ecc: .49 vd    small sti: .22 vd
 %
 % Mossbridge, J. A., Ortega, L., Grabowecky, M., & Suzuki, S. (2013). Rapid
 % volitional control of apparent motion during percept generation. 
 % Attention, Perception, & Psychophysics, 75(7), 1486-1495.
+
 %% some parameters
 AssertOpenGL;
 Priority(1);
@@ -32,20 +32,21 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-533, -267, -133, -67, 0, 67, 133, 533];
+leads = [-533, -267, -133, 0, 133, 267, 533, NaN];
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
 isi=2134; % in ms
 fisi=round(isi/framerate);
-ntrialsperblock = 128;
+ntrialspercond = 16;
+ntrialsperblock = numel(leads) * ntrialspercond;
 nblocks = 4; % with two passive viewing blocks pre and post
 
 gray = [128 128 128];
 black = [0 0 0];
 bgcolor = gray;
-decc = 8.71;
+decc = .49;
 dfixsize = .22;
-dsize = 4.36;
+dsize = .22;
 
 % Keyboard setting
 kspace = KbName('space'); kesc = KbName('Escape');
@@ -150,10 +151,18 @@ for block = 1:(nblocks+2)
             flead=sfleads(trial);
             bufferhandle=sbufferhandles(trial);
         end
-        PsychPortAudio('FillBuffer', pahandle, bufferhandle);
+        
+        if ~isnan(flead)
+            PsychPortAudio('FillBuffer', pahandle, bufferhandle);
+        end
+        
         [~,vonset1] = Screen('Flip', mainwin);
         Screen('DrawTexture', mainwin, frame1);
-        PsychPortAudio('Start', pahandle, 1, vonset1 + (fisi-flead+1) / framerate, 0);
+        
+        if ~isnan(flead)
+            PsychPortAudio('Start', pahandle, 1, vonset1 + (fisi-flead+1) / framerate, 0);
+        end
+        
         Screen('Flip', mainwin, [], 1);
         for d = 1:(fisi-2)
             Screen('Flip', mainwin, [], 2);
@@ -164,9 +173,12 @@ for block = 1:(nblocks+2)
         %     PsychPortAudio('Start', pahandle, 1, vonset1 + (fdelay+1) / framerate, 0);
         [vbl,vonset, t1] = Screen('Flip', mainwin);
         
-        status = PsychPortAudio('GetStatus', pahandle);
-        
-        audio_onset = status.StartTime;
+        if isnan(flead)
+            audio_onset = NaN;
+        else
+            status = PsychPortAudio('GetStatus', pahandle);
+            audio_onset = status.StartTime;
+        end
         
         % collect behav data
         while 1
@@ -178,7 +190,11 @@ for block = 1:(nblocks+2)
                         session_end;return
                     elseif any(keyCode(possiblekn))
                         keypressed=find(keyCode);
-                        rt = timeSecs - audio_onset;
+                        if isnan(flead)
+                            rt = timeSecs - vonset;
+                        else
+                            rt = timeSecs - audio_onset;
+                        end
                         break;
                     end
                 end
@@ -248,7 +264,7 @@ for block = 1:(nblocks+2)
     if block == 5
         DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', black);
     else
-        DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for clockwise, low tone for counter-clockwise. Press to start the next.'], 'center','center', black);
+        DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for horizontal, low tone for vertical. Press to start the next.'], 'center','center', black);
     end
     Screen('Flip', mainwin);
     KbStrokeWait;

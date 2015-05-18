@@ -1,9 +1,12 @@
 function demo_rot_endog(env)
-% demo1 for apparent motion - temporal - voluntary control
+% demo for apparent motion - temporal - voluntary control
+% clockwise vs. counterclockwise apparent motion with endogenous auditory
+% cue
 % 128 frames from 1st frame to 2nd frame (2134 ms)
 % high tone for clockwise
 % low tone for counter clockwise
-% large ecc: 8.71 vd    large sti: 4.36 vd
+% response: left for counter-clockwise, right for clockwise
+% small ecc: .49 vd    small sti: .22 vd
 %
 % Mossbridge, J. A., Ortega, L., Grabowecky, M., & Suzuki, S. (2013). Rapid
 % volitional control of apparent motion during percept generation. 
