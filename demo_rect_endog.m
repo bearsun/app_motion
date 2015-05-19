@@ -159,7 +159,8 @@ for block = 1:(nblocks+2)
         Screen('DrawTexture', mainwin, frame1);
         
         if ~isnan(flead)
-            PsychPortAudio('Start', pahandle, 1, vonset1 + (fisi-flead+1) / framerate, 0);
+            playtime = vonset1 + (fisi-flead+1) / framerate;
+            PsychPortAudio('Start', pahandle, 1, playtime, 0);
         end
         
         Screen('Flip', mainwin, [], 1);
@@ -177,6 +178,12 @@ for block = 1:(nblocks+2)
         else
             status = PsychPortAudio('GetStatus', pahandle);
             audio_onset = status.StartTime;
+            while 1
+                Screen('Flip', mainwin,[],1);
+                if GetSecs > audio_onset+1  %%make sure the sound is played? force to wait for 1 sec
+                    break;
+                end
+            end
         end
         
         % collect behav data
