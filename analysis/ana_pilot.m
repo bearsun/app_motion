@@ -8,7 +8,7 @@ function res = ana_pilot(matfile)
 % kh = load('/home/liwei/Documents/studies/app_motion/data/res_kh_051815_rect_endog.mat');
 % ls = load('/home/liwei/Documents/studies/app_motion/data/res_ls_051815_rot_endog.mat');
 
-fleadpools = [-32, -16, -8, 0, 8, 16, 32];
+fleadpools = [-32   -24   -16   -12    -8     0    32];
 data = load(matfile);
 res.behav = ana(data.behav);
 res.prebe = ana(data.behav_pre);
