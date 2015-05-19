@@ -2,8 +2,7 @@ function demo_rect_endog(env)
 % demo for apparent motion - temporal - voluntary control
 % horizontal vs. vertical apparent motion with endogenous auditory cue
 % 128 frames from 1st frame to 2nd frame (2134 ms)
-% high tone for vertical
-% low tone for horizontal
+% High tone for horizontal, low tone for vertical
 % response: left for vertical, right for horizontal
 % small ecc: .49 vd    small sti: .22 vd
 %
