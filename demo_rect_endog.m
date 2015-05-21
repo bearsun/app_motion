@@ -272,7 +272,7 @@ for block = 1:(nblocks+2)
             Screen('DrawTexture', mainwin, tex);
             Screen('Flip', mainwin);
         end
-        
+        Screen('Flip', mainwin);
         KbStrokeWait;
     end
     if block == 5
