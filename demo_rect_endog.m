@@ -266,11 +266,12 @@ for block = 1:(nblocks+2)
         fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', flead / framerate * 1000.0);
         
         %% noise patch
-        noiseimg=(50*randn(pnoisepatch) + 128);
-        tex=Screen('MakeTexture', mainwin, noiseimg);
-        Screen('DrawTexture', mainwin, tex);
-        Screen('Flip', mainwin);
-        WaitSecs(1);
+        for i = 1:framerate
+            noiseimg=(50*randn(pnoisepatch) + 128);
+            tex=Screen('MakeTexture', mainwin, noiseimg);
+            Screen('DrawTexture', mainwin, tex);
+            Screen('Flip', mainwin);
+        end
         
         KbStrokeWait;
     end
