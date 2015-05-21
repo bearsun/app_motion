@@ -272,7 +272,11 @@ for block = 1:(nblocks+2)
             Screen('DrawTexture', mainwin, tex);
             Screen('Flip', mainwin);
         end
+<<<<<<< HEAD
         Screen('Flip', mainwin);
+=======
+        
+>>>>>>> 7280ab73ae1af8fe67f1e7077434aad479bfbf34
         KbStrokeWait;
     end
     if block == 5
