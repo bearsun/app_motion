@@ -31,7 +31,7 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-533, -400, -267, -200, -133, 0, 533, NaN];
+leads = [-400, -267, -200, -133, -67, 0, 533, NaN];
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
 isi=2134; % in ms
@@ -103,6 +103,7 @@ PsychPortAudio('Stop', pahandle, 1);
 %% visual angle to pixels
 pecc = ang2pix(decc);
 psize = ang2pix(dsize);
+pnoisepatch = round((pecc+psize)*2);
 pfixsize = ang2pix(dfixsize);
 xy1 = [-pecc/sqrt(2),pecc/sqrt(2);-pecc/sqrt(2),pecc/sqrt(2)];
 xy2 = [-xy1(1,:); xy1(2,:)];
@@ -263,7 +264,14 @@ for block = 1:(nblocks+2)
         %     fprintf('PortAudio expects audio onset  at %6.6f secs.\n', audio_onset);
         fprintf('Expected audio-visual delay    is %6.6f msecs.\n', abs(audio_onset - vonset)*1000.0);
         fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', flead / framerate * 1000.0);
+        
+        %% noise patch
+        noiseimg=(50*randn(pnoisepatch) + 128);
+        tex=Screen('MakeTexture', mainwin, noiseimg);
+        Screen('DrawTexture', mainwin, tex);
         Screen('Flip', mainwin);
+        WaitSecs(1);
+        
         KbStrokeWait;
     end
     if block == 5
