@@ -1,4 +1,4 @@
-function demo_rect_endog(env)
+function demo_rect_endog(env,group)
 % demo for apparent motion - temporal - voluntary control
 % horizontal vs. vertical apparent motion with endogenous auditory cue
 % 128 frames from 1st frame to 2nd frame (2134 ms)
@@ -11,11 +11,17 @@ function demo_rect_endog(env)
 % Attention, Perception, & Psychophysics, 75(7), 1486-1495.
 
 %% some parameters
+clc;
 AssertOpenGL;
 Priority(1);
 
-tones = {'High', 'Low'};
-motions = {'Horizontal', 'Vertical'};
+if group == 1
+    tones = {'High', 'Low'};
+    motions = {'Horizontal', 'Vertical'};
+elseif group == 2
+    tones = {'High', 'Low'};
+    motions = {'Vertical', 'Horizontal'};
+end
 % cuemapping = containers.Map(tones, motions);
 
 
@@ -179,10 +185,18 @@ for block = 1:(nblocks+2)
         end
         
         if isinf(flead)
-            if bufferhandle == bufferhandle_h
-                catchframe = frame3;
-            elseif bufferhandle == bufferhandle_l
-                catchframe = frame4;
+            if group == 1
+                if bufferhandle == bufferhandle_h
+                    catchframe = frame3;
+                elseif bufferhandle == bufferhandle_l
+                    catchframe = frame4;
+                end
+            elseif group == 2
+                if bufferhandle == bufferhandle_h
+                    catchframe = frame4;
+                elseif bufferhandle == bufferhandle_l
+                    catchframe = frame3;
+                end
             end
         end
         
