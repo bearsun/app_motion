@@ -14,6 +14,11 @@ function demo_rect_endog(env)
 AssertOpenGL;
 Priority(1);
 
+tones = {'High', 'Low'};
+motions = {'Horizontal', 'Vertical'};
+cuemapping = containers.Map(tones, motions);
+
+
 if strcmp(env, 'lab')
     monitorh=30; %12;% in cm
     distance=55; %25;% in cm
@@ -31,9 +36,11 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-400, -267, -200, -133, -67, 0, 533, NaN];
+leads = [-400, -267, -200, -133, -67, 0, 133, 533, NaN, Inf];
+catchlead = 533;
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
+catchflead = round(catchlead * framerate / 1000);
 isi=2134; % in ms
 fisi=round(isi/framerate);
 ntrialspercond = 16;
@@ -44,7 +51,7 @@ gray = [128 128 128];
 black = [0 0 0];
 bgcolor = gray;
 decc = .49;
-dfixsize = .22;
+dfixsize = .05;
 dsize = .22;
 
 % Keyboard setting
@@ -99,6 +106,12 @@ PsychPortAudio('Stop', pahandle, 1);
 [mainwin,mrect]=Screen('OpenWindow', mainscreen, bgcolor);
 [frame1,f1rect]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
 [frame2,f2rect]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
+[frame3,f3rect]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
+[frame4,f4rect]=Screen('OpenOffscreenWindow',mainscreen, bgcolor);
+
+%% opposite mapping for catch trial vs. tones
+
+catchframe = container.Map([bufferhandle_h, bufferhandle_l],[frame3, frame4]); %cue for vertical / horizontal motion
 
 %% visual angle to pixels
 pecc = ang2pix(decc);
@@ -107,14 +120,27 @@ pnoisepatch = round((pecc+psize)*2);
 pfixsize = ang2pix(dfixsize);
 xy1 = [-pecc/sqrt(2),pecc/sqrt(2);-pecc/sqrt(2),pecc/sqrt(2)];
 xy2 = [-xy1(1,:); xy1(2,:)];
+xy3 = [xy1(1,:); zeros(2,1)]; % cue for vertical motion
+xy4 = [zeros(2,1); xy1(2,:)];  % cue for horizontal motion
+
 f1center=[f1rect(3)/2, f1rect(4)/2];
 f2center=[f2rect(3)/2, f2rect(4)/2];
+f3center=[f3rect(3)/2, f3rect(4)/2];
+f4center=[f4rect(3)/2, f4rect(4)/2];
+
 %% construct frame1 and frame2
 Screen('gluDisk', frame1, black, f1center(1), f1center(2), pfixsize);
 Screen('DrawDots', frame1, xy1, psize, black, f1center);
 
 Screen('gluDisk', frame2, black, f2center(1), f2center(2), pfixsize);
 Screen('DrawDots', frame2, xy2, psize, black, f2center);
+
+%% extra frame for catch trial
+Screen('gluDisk', frame3, black, f3center(1), f3center(2), pfixsize);
+Screen('DrawDots', frame3, xy3, psize, black, f3center);
+
+Screen('gluDisk', frame4, black, f4center(1), f4center(2), pfixsize);
+Screen('DrawDots', frame4, xy4, psize, black, f4center);
 
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
@@ -159,8 +185,13 @@ for block = 1:(nblocks+2)
         [~,vonset1] = Screen('Flip', mainwin);
         Screen('DrawTexture', mainwin, frame1);
         
-        if ~isnan(flead)
+        if ~isnan(flead)&&~isinf(flead)
             playtime = vonset1 + (fisi-flead+1) / framerate;
+            PsychPortAudio('Start', pahandle, 1, playtime, 0);
+        end
+        
+        if isinf(flead)
+            playtime = vonset1 + (fisi-catchflead+1.5) / framerate;
             PsychPortAudio('Start', pahandle, 1, playtime, 0);
         end
         
@@ -168,6 +199,12 @@ for block = 1:(nblocks+2)
         for d = 1:(fisi-2)
             Screen('Flip', mainwin, [], 2);
         end
+        
+        if isinf(flead)
+            Screen('Flip', mainwin);
+            Screen('DrawTexture', mainwin, catchframe(bufferhandle));
+        end
+        
         vbl1 = Screen('Flip', mainwin);
         Screen('DrawTexture', mainwin, frame2);
         %     % schedule beep after the app_motion
@@ -180,7 +217,7 @@ for block = 1:(nblocks+2)
             stat = PsychPortAudio('GetStatus', pahandle);
             audio_onset = stat.StartTime;
             while 1
-                if GetSecs > audio_onset  %%make sure the sound is played? force to wait for 1 sec
+                if GetSecs > audio_onset + 1  %%make sure the sound is played? force to wait for 1 sec
                     break;
                 end
             end
@@ -188,19 +225,18 @@ for block = 1:(nblocks+2)
         
         % collect behav data
         while 1
-            [keyIsDown, timeSecs, keyCode] = KbCheck;
+            [keyIsDown, ~, keyCode] = KbCheck;
             if keyIsDown
-                nKeys = sum(keyCode);
-                if nKeys == 1
+                if sum(keyCode) == 1
                     if keyCode(kesc)
                         session_end;return
                     elseif any(keyCode(possiblekn))
                         keypressed=find(keyCode);
-                        if isnan(flead)
-                            rt = timeSecs - vonset;
-                        else
-                            rt = timeSecs - audio_onset;
-                        end
+                        %                         if isnan(flead)
+                        %                             rt = timeSecs - vonset;
+                        %                         else
+                        %                             rt = timeSecs - audio_onset;
+                        %                         end
                         break;
                     end
                 end
@@ -219,41 +255,38 @@ for block = 1:(nblocks+2)
         if block == 1
             behav_pre(trial) = struct('keypressed', keypressed, ...
                 'flead', flead, ...
-                'tone', tone, ...
-                'rt', rt);
+                'tone', tone);
             
             timing_pre(trial)=struct('status', stat, ...
                 'Flip_delay', vbl - vbl1, ...
                 'Flip_exe', t1 - vbl, ...
                 'vonset', vonset, ...
                 'aonset', audio_onset, ...
-                'av_offset', abs(audio_onset - vonset) * 1000.0, ...
+                'av_offset', (audio_onset - vonset) * 1000.0, ...
                 'scheduled_av_offset', flead / framerate * 1000.0);
         elseif block == 6
             behav_post(trial) = struct('keypressed', keypressed, ...
                 'flead', flead, ...
-                'tone', tone, ...
-                'rt', rt);
+                'tone', tone);
             
             timing_post(trial)=struct('status', stat, ...
                 'Flip_delay', vbl - vbl1, ...
                 'Flip_exe', t1 - vbl, ...
                 'vonset', vonset, ...
                 'aonset', audio_onset, ...
-                'av_offset', abs(audio_onset - vonset) * 1000.0, ...
+                'av_offset', (audio_onset - vonset) * 1000.0, ...
                 'scheduled_av_offset', flead / framerate * 1000.0);
         else
             behav(trial) = struct('keypressed', keypressed, ...
                 'flead', flead, ...
-                'tone', tone, ...
-                'rt', rt);
+                'tone', tone);
             
             timing(trial)=struct('status', stat, ...
                 'Flip_delay', vbl - vbl1, ...
                 'Flip_exe', t1 - vbl, ...
                 'vonset', vonset, ...
                 'aonset', audio_onset, ...
-                'av_offset', abs(audio_onset - vonset) * 1000.0, ...
+                'av_offset', (audio_onset - vonset) * 1000.0, ...
                 'scheduled_av_offset', flead / framerate * 1000.0);
         end
         %     fprintf('Flip delay = %6.6f secs.  Flipend vs. VBL %6.6f\n', vbl - vbl1, t1-vbl);
@@ -262,7 +295,7 @@ for block = 1:(nblocks+2)
         %     fprintf('Buffersize %i, xruns = %i, playpos = %6.6f secs.\n', status.BufferSize, status.XRuns, status.PositionSecs);
         %     fprintf('Screen    expects visual onset at %6.6f secs.\n', vonset);
         %     fprintf('PortAudio expects audio onset  at %6.6f secs.\n', audio_onset);
-        fprintf('Expected audio-visual delay    is %6.6f msecs.\n', abs(audio_onset - vonset)*1000.0);
+        fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (audio_onset - vonset)*1000.0);
         fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', flead / framerate * 1000.0);
         
         %% noise patch
