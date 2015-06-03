@@ -223,7 +223,7 @@ for block = 1:(nblocks+2)
             audio_onset = NaN;
         else
             while 1
-                if GetSecs > t1 + 1  %%make sure the sound is played? force to wait for 1 sec
+                if GetSecs > t1 + .5  %%make sure the sound is played? force to wait for .5 sec
                     break;
                 end
             end
