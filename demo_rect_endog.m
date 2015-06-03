@@ -55,6 +55,8 @@ nblocks = 4; % with two passive viewing blocks pre and post
 
 gray = [128 128 128];
 black = [0 0 0];
+red = [128 0 0];
+fxcolor = red;
 bgcolor = gray;
 decc = .49;
 dfixsize = .05;
@@ -136,17 +138,17 @@ f3center=[f3rect(3)/2, f3rect(4)/2];
 f4center=[f4rect(3)/2, f4rect(4)/2];
 
 %% construct frame1 and frame2
-Screen('gluDisk', frame1, black, f1center(1), f1center(2), pfixsize);
+Screen('gluDisk', frame1, fxcolor, f1center(1), f1center(2), pfixsize);
 Screen('DrawDots', frame1, xy1, psize, black, f1center);
 
-Screen('gluDisk', frame2, black, f2center(1), f2center(2), pfixsize);
+Screen('gluDisk', frame2, fxcolor, f2center(1), f2center(2), pfixsize);
 Screen('DrawDots', frame2, xy2, psize, black, f2center);
 
 %% extra frame for catch trial
-Screen('gluDisk', frame3, black, f3center(1), f3center(2), pfixsize);
+Screen('gluDisk', frame3, fxcolor, f3center(1), f3center(2), pfixsize);
 Screen('DrawDots', frame3, xy3, psize, black, f3center);
 
-Screen('gluDisk', frame4, black, f4center(1), f4center(2), pfixsize);
+Screen('gluDisk', frame4, fxcolor, f4center(1), f4center(2), pfixsize);
 Screen('DrawDots', frame4, xy4, psize, black, f4center);
 
 %% empty loader for behavioral results
