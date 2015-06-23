@@ -7,7 +7,7 @@ function demo_rect_endog(env,group)
 % small ecc: .49 vd    small sti: .22 vd
 %
 % Mossbridge, J. A., Ortega, L., Grabowecky, M., & Suzuki, S. (2013). Rapid
-% volitional control of apparent motion during percept generation. 
+% volitional control of apparent motion during percept generation.
 % Attention, Perception, & Psychophysics, 75(7), 1486-1495.
 
 %% some parameters
@@ -89,7 +89,7 @@ pahandle = PsychPortAudio('Open', [], [], [], freq,1);
 % over the audio device, even if this causes other sound applications to fail or
 % shutdown. Level 3 means: As level 2, but request the most aggressive settings
 % for the given device. Level 4: Same as 3, but fail if device can't meet the
-% strictest requirements. 
+% strictest requirements.
 
 beep_h = MakeBeep(freq_h,duration,freq);
 beep_l = MakeBeep(freq_l,duration,freq);
@@ -156,11 +156,11 @@ Screen('DrawDots', frame4, xy4, psize, sticolor, f4center);
 
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
-        'flead', [], ...
-        'tone', []);
+    'flead', [], ...
+    'tone', []);
 behav_pre = behav;
 behav_post = behav;
-    
+
 timing = struct('status',[],...
     'Flip_delay',[], ...
     'Flip_exe', [],...
@@ -170,8 +170,8 @@ timing = struct('status',[],...
     'scheduled_av_offset', []);
 timing_pre = timing;
 timing_post = timing;
-
-KbStrokeWait;
+% 
+% KbStrokeWait;
 %% Loop for trials
 for block = 1:(nblocks+2)
     
@@ -186,7 +186,7 @@ for block = 1:(nblocks+2)
     
     Screen('Flip',mainwin);
     KbStrokeWait;
-
+    
     for subtrial = 1:ntrialsperblock
         if block == 1
             trial = subtrial;
@@ -353,13 +353,13 @@ for block = 1:(nblocks+2)
         Screen('Flip', mainwin);
         KbStrokeWait;
     end
-    if block == 5
-        DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', black);
-    else
-        DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for horizontal, low tone for vertical. Press to start the next.'], 'center','center', black);
-    end
-    Screen('Flip', mainwin);
-    KbStrokeWait;
+    %     if block == 5
+    %         DrawFormattedText(mainwin,['End of block ' num2str(block) '. Press to start the next.'], 'center','center', black);
+    %     else
+    %         DrawFormattedText(mainwin,['End of block ' num2str(block) '. High tone for horizontal, low tone for vertical. Press to start the next.'], 'center','center', black);
+    %     end
+    %     Screen('Flip', mainwin);
+    %     KbStrokeWait;
 end
 
 session_end;
