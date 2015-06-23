@@ -41,9 +41,9 @@ nblocks = 4; % with two passive viewing blocks pre and post
 gray = [128 128 128];
 black = [0 0 0];
 bgcolor = gray;
-decc = .49;
+decc = 4.49;
 dfixsize = .22;
-dsize = .22;
+dsize = 2.22;
 
 % Keyboard setting
 kspace = KbName('space'); kesc = KbName('Escape');

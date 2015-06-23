@@ -42,7 +42,8 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-400, -267, -200, -133, -67, 0, 133, 533, NaN, Inf];
+% leads = [-400, -267, -200, -133, -67, 0, 133, 533, NaN, Inf];
+leads = [-400, 400, NaN, Inf];
 catchlead = 533;
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
@@ -55,9 +56,12 @@ nblocks = 4; % with two passive viewing blocks pre and post
 
 gray = [128 128 128];
 black = [0 0 0];
+yellow = [255 255 0];
+white = [255 255 255];
 red = [128 0 0];
-fxcolor = red;
-bgcolor = gray;
+fxcolor = yellow;
+bgcolor = black;
+sticolor = white;
 decc = .49;
 dfixsize = .05;
 dsize = .22;
@@ -139,17 +143,17 @@ f4center=[f4rect(3)/2, f4rect(4)/2];
 
 %% construct frame1 and frame2
 Screen('gluDisk', frame1, fxcolor, f1center(1), f1center(2), pfixsize);
-Screen('DrawDots', frame1, xy1, psize, black, f1center);
+Screen('DrawDots', frame1, xy1, psize, sticolor, f1center);
 
 Screen('gluDisk', frame2, fxcolor, f2center(1), f2center(2), pfixsize);
-Screen('DrawDots', frame2, xy2, psize, black, f2center);
+Screen('DrawDots', frame2, xy2, psize, sticolor, f2center);
 
 %% extra frame for catch trial
 Screen('gluDisk', frame3, fxcolor, f3center(1), f3center(2), pfixsize);
-Screen('DrawDots', frame3, xy3, psize, black, f3center);
+Screen('DrawDots', frame3, xy3, psize, sticolor, f3center);
 
 Screen('gluDisk', frame4, fxcolor, f4center(1), f4center(2), pfixsize);
-Screen('DrawDots', frame4, xy4, psize, black, f4center);
+Screen('DrawDots', frame4, xy4, psize, sticolor, f4center);
 
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
