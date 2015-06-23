@@ -42,7 +42,7 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-400, -267, -200, -133, -67, 0, 133, 533, NaN, Inf];
+leads = [-133, 0, 16, 33, 67, 133, NaN, Inf];
 catchlead = 533;
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
@@ -210,7 +210,7 @@ for block = 1:(nblocks+2)
         Screen('DrawTexture', mainwin, frame1);
         
         if ~isnan(flead)&&~isinf(flead)
-            playtime = vonset1 + (fisi-flead+1) / framerate;
+            playtime = vonset1 + (fisi+flead+1) / framerate;
             PsychPortAudio('Start', pahandle, 1, playtime, 0);
         end
         
