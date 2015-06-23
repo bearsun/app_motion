@@ -173,7 +173,20 @@ timing_post = timing;
 
 KbStrokeWait;
 %% Loop for trials
-for block = 1:(nblocks+2)    
+for block = 1:(nblocks+2)
+    
+    switch block
+        case 1
+            DrawFormattedText(mainwin, 'Block No.1,\n Please report the direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n', 'center', 'center', white);
+        case nblocks+2
+            DrawFormattedText(mainwin, 'Last block,\n Please ignore the tone and report the direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n', 'center', 'center', white);
+        otherwise
+            DrawFormattedText(mainwin, ['Block No.', num2str(block),'\n Please try to see the motion cued by the tone (High for ', motions{1},', low for ', motions{2},')\n and report the actual direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n'], 'center', 'center', white);
+    end
+    
+    Screen('Flip',mainwin);
+    KbStrokeWait;
+
     for subtrial = 1:ntrialsperblock
         if block == 1
             trial = subtrial;
