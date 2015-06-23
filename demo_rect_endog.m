@@ -42,14 +42,8 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-<<<<<<< HEAD
-% leads = [-400, -267, -200, -133, -67, 0, 133, 533, NaN, Inf];
-leads = [-400, 400, NaN, Inf];
-catchlead = 533;
-=======
 leads = [-133, 0, 16, 33, 67, 133, NaN, Inf];
 catchlead = -533;
->>>>>>> 97051d0d0c09dd2c609473fdc6afbb2beb5e04ea
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
 catchflead = round(catchlead * framerate / 1000);
@@ -179,7 +173,7 @@ timing_post = timing;
 
 KbStrokeWait;
 %% Loop for trials
-for block = 1:(nblocks+2)
+for block = 1:(nblocks+2)    
     for subtrial = 1:ntrialsperblock
         if block == 1
             trial = subtrial;
