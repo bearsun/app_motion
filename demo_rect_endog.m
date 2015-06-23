@@ -42,9 +42,14 @@ sid = input('identifier for this session?','s');
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
+<<<<<<< HEAD
 % leads = [-400, -267, -200, -133, -67, 0, 133, 533, NaN, Inf];
 leads = [-400, 400, NaN, Inf];
 catchlead = 533;
+=======
+leads = [-133, 0, 16, 33, 67, 133, NaN, Inf];
+catchlead = -533;
+>>>>>>> 97051d0d0c09dd2c609473fdc6afbb2beb5e04ea
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
 catchflead = round(catchlead * framerate / 1000);
@@ -214,12 +219,12 @@ for block = 1:(nblocks+2)
         Screen('DrawTexture', mainwin, frame1);
         
         if ~isnan(flead)&&~isinf(flead)
-            playtime = vonset1 + (fisi-flead+1) / framerate;
+            playtime = vonset1 + (fisi+flead+1) / framerate;
             PsychPortAudio('Start', pahandle, 1, playtime, 0);
         end
         
         if isinf(flead)
-            playtime = vonset1 + (fisi-catchflead+1.5) / framerate;
+            playtime = vonset1 + (fisi+catchflead+2) / framerate;
             PsychPortAudio('Start', pahandle, 1, playtime, 0);
         end
         
@@ -290,7 +295,7 @@ for block = 1:(nblocks+2)
                 'Flip_exe', t1 - vbl, ...
                 'vonset', vonset, ...
                 'aonset', audio_onset, ...
-                'av_offset', (vonset - audio_onset) * 1000.0, ...
+                'av_offset', (audio_onset - vonset) * 1000.0, ...
                 'scheduled_av_offset', flead / framerate * 1000.0);
         elseif block == 6
             behav_post(trial) = struct('keypressed', keypressed, ...
@@ -302,7 +307,7 @@ for block = 1:(nblocks+2)
                 'Flip_exe', t1 - vbl, ...
                 'vonset', vonset, ...
                 'aonset', audio_onset, ...
-                'av_offset', (vonset - audio_onset) * 1000.0, ...
+                'av_offset', (audio_onset - vonset) * 1000.0, ...
                 'scheduled_av_offset', flead / framerate * 1000.0);
         else
             behav(trial) = struct('keypressed', keypressed, ...
@@ -314,7 +319,7 @@ for block = 1:(nblocks+2)
                 'Flip_exe', t1 - vbl, ...
                 'vonset', vonset, ...
                 'aonset', audio_onset, ...
-                'av_offset', (vonset - audio_onset) * 1000.0, ...
+                'av_offset', (audio_onset - vonset) * 1000.0, ...
                 'scheduled_av_offset', flead / framerate * 1000.0);
         end
         %     fprintf('Flip delay = %6.6f secs.  Flipend vs. VBL %6.6f\n', vbl - vbl1, t1-vbl);
@@ -323,8 +328,13 @@ for block = 1:(nblocks+2)
         %     fprintf('Buffersize %i, xruns = %i, playpos = %6.6f secs.\n', status.BufferSize, status.XRuns, status.PositionSecs);
         %     fprintf('Screen    expects visual onset at %6.6f secs.\n', vonset);
         %     fprintf('PortAudio expects audio onset  at %6.6f secs.\n', audio_onset);
-        fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (vonset - audio_onset)*1000.0);
-        fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', flead / framerate * 1000.0);
+        fprintf('Expected audio-visual delay    is %6.6f msecs.\n', (audio_onset - vonset)*1000.0);
+        
+        if isinf(flead)
+            fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', catchlead)
+        else
+            fprintf('Scheduled audio-visual delay    is %6.6f msecs.\n', flead / framerate * 1000.0);
+        end
         
         %% noise patch
         for i = 1:framerate
