@@ -155,6 +155,14 @@ Screen('DrawDots', frame3, xy3, psize, sticolor, f3center);
 Screen('gluDisk', frame4, fxcolor, f4center(1), f4center(2), pfixsize);
 Screen('DrawDots', frame4, xy4, psize, sticolor, f4center);
 
+%% frames for noise mask
+tex = NaN(framerate,1);
+
+for i = 1:framerate
+    noiseimg=(50*randn(pnoisepatch) + 128);
+    tex(i)=Screen('MakeTexture', mainwin, noiseimg);
+end
+
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
     'flead', [], ...
@@ -345,12 +353,9 @@ for block = 1:(nblocks+2)
         end
         
         %% noise patch
-        for i = 1:framerate
-            noiseimg=(50*randn(pnoisepatch) + 128);
-            tex=Screen('MakeTexture', mainwin, noiseimg);
-            Screen('DrawTexture', mainwin, tex);
+        for i = Shuffle(1:framerate)
+            Screen('DrawTexture', mainwin, tex(i));
             Screen('Flip', mainwin);
-            Screen('Close', tex);
         end
         Screen('Flip', mainwin);
         KbStrokeWait;
