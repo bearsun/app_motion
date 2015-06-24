@@ -349,6 +349,7 @@ for block = 1:(nblocks+2)
             tex=Screen('MakeTexture', mainwin, noiseimg);
             Screen('DrawTexture', mainwin, tex);
             Screen('Flip', mainwin);
+            Screen('Close', tex);
         end
         Screen('Flip', mainwin);
         KbStrokeWait;
