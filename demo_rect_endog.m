@@ -1,4 +1,5 @@
 function demo_rect_endog(env,group)
+% tested 6/24/15, for this code, audio goes 7-8 ms ahead of schedule
 % demo for apparent motion - temporal - voluntary control
 % horizontal vs. vertical apparent motion with endogenous auditory cue
 % 128 frames from 1st frame to 2nd frame (2134 ms)

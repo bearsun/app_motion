@@ -1,5 +1,6 @@
 function test_sync(env)
 % testing code, large stimuli
+% tested 6/24/15, for this code, audio goes 7-8 ms ahead of schedule
 % demo for apparent motion - temporal - voluntary control
 % horizontal vs. vertical apparent motion with endogenous auditory cue
 % 128 frames from 1st frame to 2nd frame (2134 ms)
@@ -250,7 +251,7 @@ for block = 1:(nblocks+2)
         Screen('DrawTexture', mainwin, frame2);
         %     % schedule beep after the app_motion
         %     PsychPortAudio('Start', pahandle, 1, vonset1 + (fdelay+1) / framerate, 0);
-        [vbl,vonset, t1] = Screen('Flip', mainwin);
+        [vbl,vonset, t1] = Screen('Flip', mainwin,[],1);
         
         if isnan(flead)
             audio_onset = NaN;
@@ -263,7 +264,8 @@ for block = 1:(nblocks+2)
             stat = PsychPortAudio('GetStatus', pahandle);
             audio_onset = stat.StartTime;
         end
-        
+        DrawFormattedText(mainwin, ['a to v = ',num2str((audio_onset - vonset)*1000.0)],300,300);
+        Screen('Flip',mainwin);
         % collect behav data
         while 1
             [keyIsDown, ~, keyCode] = KbCheck;
