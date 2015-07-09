@@ -52,7 +52,7 @@ isi=2134; % in ms
 fisi=round(isi/framerate);
 ntrialspercond = 16;
 ntrialsperblock = numel(leads) * ntrialspercond;
-nblocks = 4; % with two passive viewing blocks pre and post
+nblocks = 3; % with two passive viewing blocks pre and post
 
 gray = [128 128 128];
 black = [0 0 0];
@@ -201,7 +201,7 @@ for block = 1:(nblocks+2)
             trial = subtrial;
             flead = sfleads_pre(trial);
             bufferhandle = sbufferhandles_pre(trial);
-        elseif block == 6
+        elseif block == nblocks + 2
             trial = subtrial;
             flead = sfleads_post(trial);
             bufferhandle = sbufferhandles_post(trial);
