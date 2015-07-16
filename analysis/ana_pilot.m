@@ -13,12 +13,12 @@ function res = ana_pilot(matfile)
 data = load(matfile);
 
 uniflead = unique(cat(2, data.behav.flead));
-fleadpools = sort(uniflead(~isnan(uniflead)));
+fleadpools = sort(uniflead(~isnan(uniflead)&~isinf(uniflead)));
 
 res.behav = ana(data.behav);
 res.prebe = ana(data.behav_pre);
 res.postbe = ana(data.behav_post);
-res.dlead = fleadpools*1000/60;
+res.dlead = [fleadpools*1000/60, Inf];
 
     function res = ana(d)
         % analysis behav data
@@ -34,6 +34,15 @@ res.dlead = fleadpools*1000/60;
                 ismember(t.tone, 'low') & t.keypressed == 114);
             res(kflead) = consist - inconsist;
         end
+        
+        flead = Inf;
+        consist = sum(t.flead == flead & ismember(t.tone,'high') & ...
+            t.keypressed == 114) + sum(t.flead == flead & ...
+            ismember(t.tone, 'low') & t.keypressed == 115);
+        inconsist = sum(t.flead == flead & ismember(t.tone,'high') & ...
+            t.keypressed == 115) + sum(t.flead == flead & ...
+            ismember(t.tone, 'low') & t.keypressed == 114);
+        res(kflead) = consist - inconsist;
     end
 
 end
