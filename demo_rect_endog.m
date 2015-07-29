@@ -1,5 +1,8 @@
-function demo_rect_endog(env,group)
+function demo_rect_endog
 % tested 6/24/15, for this code, audio goes 7-8 ms ahead of schedule
+% upadted 7/28/15, updated to 2 half hour sessions, with more conditions on
+% each side as anchor point (pre should be high on bias, post should be no
+% bias.
 % demo for apparent motion - temporal - voluntary control
 % horizontal vs. vertical apparent motion with endogenous auditory cue
 % 128 frames from 1st frame to 2nd frame (2134 ms)
@@ -16,15 +19,9 @@ clc;
 AssertOpenGL;
 Priority(1);
 
-if group == 1
-    tones = {'High', 'Low'};
-    motions = {'Horizontal', 'Vertical'};
-elseif group == 2
-    tones = {'High', 'Low'};
-    motions = {'Vertical', 'Horizontal'};
-end
-% cuemapping = containers.Map(tones, motions);
+timingadjustment = .007; %according to previous test, audio seems to go 7ms ahead of video
 
+env = 'lab';
 
 if strcmp(env, 'lab')
     monitorh=30; %12;% in cm
@@ -38,12 +35,22 @@ else
     error('pls input env');
 end
 
-sid = input('identifier for this session?','s');
+sid = input('subject initial?','s');
+group = input('group?');
+session = input('session?');
+
+if group == 1
+    tones = {'High', 'Low'};
+    motions = {'Horizontal', 'Vertical'};
+elseif group == 2
+    tones = {'High', 'Low'};
+    motions = {'Vertical', 'Horizontal'};
+end
 
 framerate=Screen('FrameRate',mainscreen);
 % delays=[0,17,34,67]; %cue lag time
 % fdelays=round(delays*framerate/1000);
-leads = [-133, 0, 16, 33, 67, 133, NaN, Inf];
+leads = [-533, -133, 0, 16, 33, 67, 133, 533, NaN, Inf];
 catchlead = -533;
 % leads = [0, 17, 34, 67, 133, 267, 533, 1067];
 fleads = round(leads*framerate/1000);
@@ -52,7 +59,13 @@ isi=2134; % in ms
 fisi=round(isi/framerate);
 ntrialspercond = 16;
 ntrialsperblock = numel(leads) * ntrialspercond;
-nblocks = 3; % with two passive viewing blocks pre and post
+if session == 1
+    nblocks = 1; % 3 exp blocks, including the 2nd session
+elseif session == 2
+    nblocks = 2;
+else
+    error('wrong session number');
+end
 
 gray = [128 128 128];
 black = [0 0 0];
@@ -72,8 +85,7 @@ kleft = KbName('Left'); kright = KbName('Right');
 kdown = KbName('Down');kup=KbName('Up');
 kreturn=KbName('Return');
 kback = KbName('BackSpace');
-possiblekn = [kleft, kright]; % left for counterclockwise, right for
-% clockwise
+possiblekn = [kleft, kright];
 
 % beep loading
 freq = 48000;
@@ -106,13 +118,6 @@ PsychPortAudio('Stop', pahandle, 1);
 PsychPortAudio('FillBuffer', pahandle, bufferhandle_l);
 PsychPortAudio('Start', pahandle, 1, 0, 1);
 PsychPortAudio('Stop', pahandle, 1);
-
-%% generate trial sequence
-[sfleads, sbufferhandles] = BalanceTrials(ntrialsperblock*nblocks, 1, fleads, [bufferhandle_h, bufferhandle_l]);
-
-%% generate passive viewing blocks
-[sfleads_pre, sbufferhandles_pre] = BalanceTrials(ntrialsperblock, 1, fleads, [bufferhandle_h, bufferhandle_l]);
-[sfleads_post, sbufferhandles_post] = BalanceTrials(ntrialsperblock, 1, fleads, [bufferhandle_h, bufferhandle_l]);
 
 %% open window and buffers
 [mainwin,mrect]=Screen('OpenWindow', mainscreen, bgcolor);
@@ -163,12 +168,15 @@ for i = 1:framerate
     tex(i)=Screen('MakeTexture', mainwin, noiseimg);
 end
 
+%% initialize every thing at the beginning of session 1
+
+%% generate trial sequence
+[sfleads, sbufferhandles] = BalanceTrials(ntrialsperblock*nblocks, 1, fleads, [bufferhandle_h, bufferhandle_l]);
+
 %% empty loader for behavioral results
 behav = struct('keypressed', [], ...
     'flead', [], ...
     'tone', []);
-behav_pre = behav;
-behav_post = behav;
 
 timing = struct('status',[],...
     'Flip_delay',[], ...
@@ -177,36 +185,40 @@ timing = struct('status',[],...
     'aonset', [],...
     'av_offset', [],...
     'scheduled_av_offset', []);
-timing_pre = timing;
-timing_post = timing;
-% 
-% KbStrokeWait;
+
+if session == 1    
+    %% generate passive viewing block
+    [sfleads_pre, sbufferhandles_pre] = BalanceTrials(ntrialsperblock, 1, fleads, [bufferhandle_h, bufferhandle_l]);
+    behav_pre = behav;
+    timing_pre = timing;
+    nblocks = nblocks + 1;
+end
+
 %% Loop for trials
-for block = 1:(nblocks+2)
+for block = 1:nblocks
     
-    switch block
-        case 1
-            DrawFormattedText(mainwin, 'Block No.1,\n Please report the direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n', 'center', 'center', white);
-        case nblocks+2
-            DrawFormattedText(mainwin, 'Last block,\n Please ignore the tone and report the direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n', 'center', 'center', white);
-        otherwise
-            DrawFormattedText(mainwin, ['Block No.', num2str(block),'\n Please try to see the motion cued by the tone (High for ', motions{1},', low for ', motions{2},')\n and report the actual direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n'], 'center', 'center', white);
+    if block == 1 && session == 1
+        DrawFormattedText(mainwin, 'Block No.1,\n Please report the direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n', 'center', 'center', white);
+    else
+        DrawFormattedText(mainwin, ['Block No.', num2str(block),'\n Please try to see the motion cued by the tone (High for ', motions{1},', low for ', motions{2},')\n and report the actual direction of motion,\nLeft key for horizontal, right key for vertical.\nPress space to start.\n'], 'center', 'center', white);
     end
     
     Screen('Flip',mainwin);
     KbStrokeWait;
     
     for subtrial = 1:ntrialsperblock
-        if block == 1
-            trial = subtrial;
-            flead = sfleads_pre(trial);
-            bufferhandle = sbufferhandles_pre(trial);
-        elseif block == nblocks + 2
-            trial = subtrial;
-            flead = sfleads_post(trial);
-            bufferhandle = sbufferhandles_post(trial);
+        if session == 1
+            if block == 1
+                trial = subtrial;
+                flead = sfleads_pre(trial);
+                bufferhandle = sbufferhandles_pre(trial);
+            else
+                trial = subtrial + (block - 2) * ntrialsperblock;
+                flead=sfleads(trial);
+                bufferhandle=sbufferhandles(trial);
+            end
         else
-            trial = subtrial + (block - 2) * ntrialsperblock;
+            trial = subtrial + (block - 1) * ntrialsperblock;
             flead=sfleads(trial);
             bufferhandle=sbufferhandles(trial);
         end
@@ -236,11 +248,13 @@ for block = 1:(nblocks+2)
         
         if ~isnan(flead)&&~isinf(flead)
             playtime = vonset1 + (fisi+flead+1) / framerate;
+            playtime = playtime + timingadjustment;
             PsychPortAudio('Start', pahandle, 1, playtime, 0);
         end
         
         if isinf(flead)
             playtime = vonset1 + (fisi+catchflead+2) / framerate;
+            playtime = playtime + timingadjustment;
             PsychPortAudio('Start', pahandle, 1, playtime, 0);
         end
         
@@ -262,9 +276,10 @@ for block = 1:(nblocks+2)
         
         if isnan(flead)
             audio_onset = NaN;
+            stat = NaN;
         else
             while 1
-                if GetSecs > t1 + .5  %%make sure the sound is played? force to wait for .5 sec
+                if GetSecs > t1 + .8  %%make sure the sound is played? force to wait for .8 sec
                     break;
                 end
             end
@@ -301,24 +316,12 @@ for block = 1:(nblocks+2)
         end
         
         % save data
-        if block == 1
+        if block == 1 && session == 1
             behav_pre(trial) = struct('keypressed', keypressed, ...
                 'flead', flead, ...
                 'tone', tone);
             
             timing_pre(trial)=struct('status', stat, ...
-                'Flip_delay', vbl - vbl1, ...
-                'Flip_exe', t1 - vbl, ...
-                'vonset', vonset, ...
-                'aonset', audio_onset, ...
-                'av_offset', (audio_onset - vonset) * 1000.0, ...
-                'scheduled_av_offset', flead / framerate * 1000.0);
-        elseif block == 6
-            behav_post(trial) = struct('keypressed', keypressed, ...
-                'flead', flead, ...
-                'tone', tone);
-            
-            timing_post(trial)=struct('status', stat, ...
                 'Flip_delay', vbl - vbl1, ...
                 'Flip_exe', t1 - vbl, ...
                 'vonset', vonset, ...
@@ -380,7 +383,11 @@ session_end;
         PsychPortAudio('Close');
         ShowCursor;
         sca;
-        save(['res_' sid '.mat'],'behav','timing','behav_pre','timing_pre','behav_post','timing_post');
+        if session == 1
+            save(['res_s1_', sid, datestr(now,'mmddyy'), '.mat'],'behav','timing','behav_pre','timing_pre');
+        elseif session == 2
+            save(['res_s2_', sid, datestr(now,'mmddyy'), '.mat'],'behav','timing');
+        end
         return
     end
 end
